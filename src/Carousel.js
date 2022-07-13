@@ -1,8 +1,12 @@
-import Vue from 'vue';
 import { getInRange, now, Timer, normalizeSlideIndex, cloneNode, normalizeChildren, sign, assign } from './utils';
 import './styles/carousel.css';
-
-let EMITTER = new Vue();
+import emitter from 'tiny-emitter/instance';
+let EMITTER = {
+  $on: (...args) => emitter.on(...args),
+  $once: (...args) => emitter.on(...args),
+  $off: (...args) => emitter.on(...args),
+  $emit: (...args) => emitter.on(...args)
+};
 
 export default {
   name: 'Hooper',
