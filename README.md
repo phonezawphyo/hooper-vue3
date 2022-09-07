@@ -106,6 +106,6 @@ more info at [Documentation](https://baianat.github.io/hooper/)
 Please also look at the source to style the slider. An initial style can be imported as
 `@import '~hooper/dist/hooper.css';`
 
-||Class            | Property | Default | Description||
-||-----------------|----------|---------|------------||
-||`hooper`         | `height` | 200px   | the default height of the slider, set to auto to scale with content|
+| Class    | Property | Default | Description                                                         |
+|----------|----------|---------|---------------------------------------------------------------------|
+| `hooper` | `height` | 200px   | the default height of the slider, set to auto to scale with content |
