@@ -1,6 +1,6 @@
 import { normalizeSlideIndex } from '../utils';
 import '../styles/progress.css';
-
+import { h } from 'vue';
 export default {
   inject: ['$hooper'],
   name: 'HooperProgress',
@@ -13,7 +13,7 @@ export default {
       return ((this.currentSlide - this.$hooper.trimStart) * 100) / range;
     }
   },
-  render(h) {
+  render() {
     return h('div', { class: 'hooper-progress' }, [
       h('div', { class: 'hooper-progress-inner', style: `width: ${this.progress}%` })
     ]);

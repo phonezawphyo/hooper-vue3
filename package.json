@@ -1,6 +1,8 @@
 {
   "name": "hooper-vue3",
-  "version": "0.3.5",
+  "version": "0.4.3",
+  "url": "https://github.com/magFixCorp/hooper-vue3",
+  "email": "magfixcorp@gmail.com",
   "description": "A customizable accessible carousel slider optimized for Vue",
   "module": "dist/hooper.esm.js",
   "unpkg": "dist/hooper.js",

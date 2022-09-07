@@ -1,6 +1,7 @@
 import { getInRange, now, Timer, normalizeSlideIndex, cloneNode, normalizeChildren, sign, assign } from './utils';
 import './styles/carousel.css';
 import emitter from 'tiny-emitter/instance';
+import { h, ref } from 'vue'
 let EMITTER = {
   $on: (...args) => emitter.on(...args),
   $once: (...args) => emitter.on(...args),
@@ -48,7 +49,7 @@ export default {
     },
     // enable rtl mode
     rtl: {
-      default: null,
+      default: true,
       type: Boolean
     },
     // enable auto sliding to carousel
@@ -115,6 +116,8 @@ export default {
   },
   data() {
     return {
+      list: ref(null),
+      track: ref(null),
       isDragging: false,
       isSliding: false,
       isTouch: false,
@@ -122,6 +125,8 @@ export default {
       isFocus: false,
       initialized: false,
       slideWidth: 0,
+      containerWidth: 0,
+      containerHeight: 0,
       slideHeight: 0,
       slidesCount: 0,
       trimStart: 0,
@@ -245,14 +250,6 @@ export default {
       if (this.$props.autoPlay) {
         this.initAutoPlay();
       }
-      if (this.config.mouseDrag) {
-        this.$refs.list.addEventListener('mousedown', this.onDragStart);
-      }
-      if (this.config.touchDrag) {
-        this.$refs.list.addEventListener('touchstart', this.onDragStart, {
-          passive: true
-        });
-      }
       if (this.config.keysControl) {
         this.$el.addEventListener('keydown', this.onKeypress);
       }
@@ -265,7 +262,7 @@ export default {
     getCurrentSlideTimeout() {
       const curIdx = normalizeSlideIndex(this.currentSlide, this.slidesCount);
       const children = normalizeChildren(this);
-      return children[curIdx].componentOptions.propsData.duration;
+      return children[curIdx].props.duration;
     }, // switched to using a timeout which defaults to the prop set on this component, but can be overridden on a per slide basis.
     initAutoPlay() {
       this.timer = new Timer(() => {
@@ -498,8 +495,6 @@ export default {
     this.initDefaults();
   },
   mounted() {
-    this.initEvents();
-    this.addGroupListeners();
     this.$nextTick(() => {
       this.update();
       this.slideTo(this.config.initialSlide || 0);
@@ -508,6 +503,8 @@ export default {
         this.initialized = true;
       }, this.transition);
     });
+    this.initEvents();
+    this.addGroupListeners();
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.update);
@@ -519,26 +516,22 @@ export default {
       this.timer.stop();
     }
   },
-  render(h) {
+  render() {
     const body = renderBody.call(this, h);
 
     return h(
       'section',
       {
+        '.tabindex': '0',
         class: {
           hooper: true,
           'is-vertical': this.config.vertical,
           'is-rtl': this.config.rtl
         },
-        attrs: {
-          tabindex: '0'
-        },
-        on: {
-          focusin: () => (this.isFocus = true),
-          focusout: () => (this.isFocus = false),
-          mouseover: () => (this.isHover = true),
-          mouseleave: () => (this.isHover = false)
-        }
+        onFocusin: () => (this.isFocus = true),
+        onFocusout: () => (this.isFocus = false),
+        onMouseover: () => (this.isHover = true),
+        onMouseleave: () => (this.isHover = false)
       },
       body
     );
@@ -549,7 +542,7 @@ export default {
  * Renders additional slides for infinite slides mode.
  * By cloning Slides VNodes before and after either edges.
  */
-function renderBufferSlides(h, slides) {
+function renderBufferSlides(slides) {
   const before = [];
   const after = [];
   // reduce prop access
@@ -560,7 +553,7 @@ function renderBufferSlides(h, slides) {
     let slideIndex = i - slidesCount;
     clonedBefore.data.key = `before_${i}`;
     clonedBefore.key = clonedBefore.data.key;
-    clonedBefore.componentOptions.propsData.index = slideIndex;
+    clonedBefore.props.index = slideIndex;
     clonedBefore.data.props = {
       index: slideIndex,
       isClone: true
@@ -571,9 +564,9 @@ function renderBufferSlides(h, slides) {
     const clonedAfter = cloneNode(h, slide);
     slideIndex = i + slidesCount;
     clonedAfter.data.key = `after_${slideIndex}`;
-    clonedAfter.componentOptions.propsData.index = slideIndex;
+    clonedAfter.props.index = slideIndex;
     clonedAfter.key = clonedAfter.data.key;
-    clonedAfter.data.props = {
+    clonedAfter.props = {
       index: slideIndex,
       isClone: true
     };
@@ -588,35 +581,33 @@ function renderBufferSlides(h, slides) {
  * requires {this} to be bound to hooper.
  * So use with .call or .bind
  */
-function renderSlides(h) {
+function renderSlides() {
   const children = normalizeChildren(this);
   const childrenCount = children.length;
+  const self = this;
   let idx = 0;
   let slides = [];
   for (let i = 0; i < childrenCount; i++) {
     const child = children[i];
-    const ctor = child.componentOptions && child.componentOptions.Ctor;
-    if (!ctor || ctor.options.name !== 'HooperSlide') {
+    if (!child || child.type.name !== 'HooperSlide') {
       continue;
     }
 
     // give slide an index behind the scenes
-    child.componentOptions.propsData.index = idx;
-    child.data.key = idx;
+    child.props.index = idx;
     child.key = idx;
-    child.data.props = {
-      ...(child.data.props || {}),
+    child.props = {
+      ...(child.props || {}),
       isClone: false,
       index: idx++
     };
-
     slides.push(child);
   }
 
   // update hooper's information of the slide count.
   this.slidesCount = slides.length;
   if (this.config.infiniteScroll) {
-    slides = renderBufferSlides(h, slides);
+    slides = renderBufferSlides(slides);
   }
 
   return h(
@@ -627,10 +618,10 @@ function renderSlides(h) {
         'is-dragging': this.isDragging
       },
       style: this.trackTransform + this.trackTransition,
-      ref: 'track',
-      on: {
-        transitionend: this.onTransitionend
-      }
+      '.ref': 'track',
+      onTransitionend: this.onTransitionend,
+      onMousedown: this.config.mouseDrag ? function (e) { self.onDragStart(e) } : undefined,
+      onTouchstart: this.config.mouseDrag ? function (e) { self.onDragStart(e) } : undefined,
     },
     slides
   );
@@ -642,17 +633,15 @@ function renderSlides(h) {
  * REQUIRES {this} to be bound to the hooper instance.
  * use with .call or .bind
  */
-function renderBody(h) {
+function renderBody() {
   const slides = renderSlides.call(this, h);
   const addons = this.$slots['hooper-addons'] || [];
   const a11y = h(
     'div',
     {
       class: 'hooper-liveregion hooper-sr-only',
-      attrs: {
-        'aria-live': 'polite',
-        'aria-atomic': 'true'
-      }
+      '.aria-live': 'polite',
+      '.aria-atomic': 'true'
     },
     `Item ${this.currentSlide + 1} of ${this.slidesCount}`
   );
@@ -664,7 +653,7 @@ function renderBody(h) {
       'div',
       {
         class: 'hooper-list',
-        ref: 'list'
+        '.ref': 'list'
       },
       children
     )

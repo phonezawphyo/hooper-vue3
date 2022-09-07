@@ -1,6 +1,6 @@
 import Icon from './Icon';
 import '../styles/navigation.css';
-
+import { h } from 'vue';
 function iconName(isVertical, isRTL, isPrev) {
   if (isPrev) {
     return isVertical ? 'arrowUp' : isRTL ? 'arrowRight' : 'arrowLeft';
@@ -9,7 +9,7 @@ function iconName(isVertical, isRTL, isPrev) {
   return isVertical ? 'arrowDown' : isRTL ? 'arrowLeft' : 'arrowRight';
 }
 
-function renderButton(h, disabled, slot, isPrev, { isVertical, isRTL }, onClick) {
+function renderButton(disabled, slot, isPrev, { isVertical, isRTL }, onClick) {
   const children =
     slot && slot.length
       ? slot
@@ -28,12 +28,8 @@ function renderButton(h, disabled, slot, isPrev, { isVertical, isRTL }, onClick)
         [`hooper-${isPrev ? 'prev' : 'next'}`]: true,
         'is-disabled': disabled
       },
-      attrs: {
-        type: 'button'
-      },
-      on: {
-        click: onClick
-      }
+      '.type': 'button',
+      onClick: onClick
     },
     children
   );
@@ -72,15 +68,15 @@ export default {
       this.$hooper.restartTimer();
     }
   },
-  render(h) {
+  render() {
     const config = {
       isRTL: this.$hooper.config.rtl,
       isVertical: this.$hooper.config.vertical
     };
 
     const children = [
-      renderButton(h, this.isPrevDisabled, this.$slots['hooper-prev'], true, config, () => this.slidePrev()),
-      renderButton(h, this.isNextDisabled, this.$slots['hooper-next'], false, config, () => this.slideNext())
+      renderButton(this.isPrevDisabled, this.$slots['hooper-prev'], true, config, () => this.slidePrev()),
+      renderButton(this.isNextDisabled, this.$slots['hooper-next'], false, config, () => this.slideNext())
     ];
 
     return h(

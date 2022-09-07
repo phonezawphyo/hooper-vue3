@@ -1,5 +1,5 @@
 import { camelCaseToString } from '../utils';
-
+import { h } from 'vue';
 const icons = {
   arrowUp: 'M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z',
   arrowDown: 'M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z',
@@ -41,15 +41,13 @@ export default {
       })
     );
 
-    return createElement(
+    return h(
       'svg',
       {
-        attrs: {
-          class: `icon icon-${props.name}`,
-          viewBox: '0 0 24 24',
-          width: '24px',
-          height: '24px'
-        }
+        '.class': `icon icon-${props.name}`,
+        '.viewBox': '0 0 24 24',
+        '.width': '24px',
+        '.height': '24px'
       },
       children
     );

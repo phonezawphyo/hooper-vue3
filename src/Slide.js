@@ -1,6 +1,6 @@
 import { normalizeChildren } from './utils';
 import './styles/slide.css';
-
+import { h } from 'vue';
 export default {
   name: 'HooperSlide',
   inject: ['$hooper'],
@@ -48,7 +48,7 @@ export default {
       return this.index === this.$hooper.currentSlide;
     }
   },
-  render(h) {
+  render() {
     const classes = {
       'hooper-slide': true,
       'is-clone': this.isClone,
@@ -65,9 +65,7 @@ export default {
       {
         class: classes,
         style: this.style,
-        attrs: {
-          'aria-hidden': !this.isActive
-        }
+        '.aria-hidden': !this.isActive
       },
       children
     );
