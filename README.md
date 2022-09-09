@@ -38,7 +38,7 @@ Vue.js carousel component, optimized to work with Vue.
 
 ### Installation
 
-First step is to install it using `yarn` or `npm`:
+First step is to install it using `npm`:
 
 ```bash
 npm install hooper-vue3
