@@ -635,7 +635,8 @@ function renderSlides() {
  */
 function renderBody() {
   const slides = renderSlides.call(this, h);
-  const addons = this.$slots['hooper-addons'] || [];
+  const addonsFn = this.$slots['hooper-addons'];
+  const addons = Boolean(addonsFn) ? addonsFn() : [];
   const a11y = h(
     'div',
     {
