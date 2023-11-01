@@ -49,7 +49,7 @@ export default {
     },
     // enable rtl mode
     rtl: {
-      default: true,
+      default: false,
       type: Boolean
     },
     // enable auto sliding to carousel
@@ -480,6 +480,7 @@ export default {
       }
     },
     addGroupListeners() {
+      console.log('addGroupListeners', this.group, EMITTER)
       if (!this.group) {
         return;
       }
